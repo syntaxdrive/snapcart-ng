@@ -75,6 +75,19 @@ const SellerApplication = () => {
                 return;
             }
 
+            // Validate WhatsApp number (basic check for country code)
+            const whatsappRegex = /^\d{10,15}$/;
+            if (!whatsappRegex.test(whatsapp)) {
+                alert('Invalid phone number. usage: Country code + Number (e.g., 2348012345678). No + sign.');
+                setLoading(false);
+                return;
+            }
+            if (whatsapp.startsWith('0')) {
+                alert('Please remove the leading zero and start with country code (e.g., 234...).');
+                setLoading(false);
+                return;
+            }
+
             // Insert new application
             const { error } = await supabase
                 .from('seller_applications')
@@ -172,7 +185,9 @@ const SellerApplication = () => {
                                     required
                                 />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">Format: 234...</p>
+                            <p className="text-xs text-red-500 mt-1 font-semibold">
+                                IMPORTANT: Start with country code (e.g. 234). No '+' sign. If you use '080...', customers cannot click to chat with you.
+                            </p>
                         </div>
 
                         <div>
@@ -214,14 +229,14 @@ const SellerApplication = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Business Description</label>
+                            <label className="block text-sm font-medium mb-1">What do you sell?</label>
                             <div className="relative">
                                 <FileText className="absolute left-3 top-4 w-5 h-5 text-gray-400" />
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     className="w-full border rounded-lg py-3 pl-10 pr-4 min-h-[120px]"
-                                    placeholder="Tell us about what you sell..."
+                                    placeholder="List the items you intend to sell (e.g. Vintage shirts, Laptops, Pastries). This helps us verify your store."
                                     required
                                 />
                             </div>

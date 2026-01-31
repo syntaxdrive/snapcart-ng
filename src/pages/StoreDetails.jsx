@@ -188,13 +188,16 @@ const StoreDetails = () => {
                                     <span className="font-bold text-lg text-blue-600">
                                         {product.currency}{product.price.toLocaleString()}
                                     </span>
-                                    <button
-                                        onClick={() => handleBuyNow(product)}
-                                        className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors shadow-sm"
+                                    <a
+                                        href={`https://wa.me/${storeInfo.whatsapp_number}?text=${encodeURIComponent(`Hi ${storeInfo.profile?.full_name}, I saw your ${product.name} on SnapCart for ${product.currency}${product.price.toLocaleString()}. Is it available?`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => supabase.rpc('increment_product_clicks', { product_id: product.id })}
+                                        className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors shadow-sm inline-flex items-center justify-center"
                                         title="Buy on WhatsApp"
                                     >
                                         <MessageCircle size={18} />
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </motion.div>

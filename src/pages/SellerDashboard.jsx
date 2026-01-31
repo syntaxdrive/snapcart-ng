@@ -43,16 +43,28 @@ const SellerDashboard = () => {
     const [qualifications, setQualifications] = useState('');
     const [updatingQuals, setUpdatingQuals] = useState(false);
 
+    // Store Details
+    const [businessName, setBusinessName] = useState('');
+    const [businessDesc, setBusinessDesc] = useState('');
+    const [whatsapp, setWhatsapp] = useState('');
+    const [updatingStore, setUpdatingStore] = useState(false);
+
     // ... existing useState ...
 
     const loadStoreInfo = async () => {
-        // Banner
+        // Banner and Details
         const { data: appData } = await supabase
             .from('seller_applications')
-            .select('banner_url')
+            .select('business_name, business_description, whatsapp_number, banner_url')
             .eq('user_id', user.id)
             .single();
-        if (appData) setCurrentBanner(appData.banner_url);
+
+        if (appData) {
+            setCurrentBanner(appData.banner_url);
+            setBusinessName(appData.business_name);
+            setBusinessDesc(appData.business_description);
+            setWhatsapp(appData.whatsapp_number);
+        }
 
         // Qualifications from Profile
         const { data: profileData } = await supabase
@@ -73,6 +85,36 @@ const SellerDashboard = () => {
         setUpdatingQuals(false);
         if (error) alert('Error saving qualifications');
         else alert('Qualifications saved!');
+    };
+
+    const handleSaveStoreSettings = async () => {
+        setUpdatingStore(true);
+
+        // Validate WhatsApp
+        const whatsappRegex = /^\d{10,15}$/;
+        if (!whatsappRegex.test(whatsapp)) {
+            alert('Invalid phone number. usage: Country code + Number (e.g., 2348012345678).');
+            setUpdatingStore(false);
+            return;
+        }
+        if (whatsapp.startsWith('0')) {
+            alert('Please remove the leading zero and start with country code (e.g., 234...).');
+            setUpdatingStore(false);
+            return;
+        }
+
+        const { error } = await supabase
+            .from('seller_applications')
+            .update({
+                business_name: businessName,
+                business_description: businessDesc,
+                whatsapp_number: whatsapp
+            })
+            .eq('user_id', user.id);
+
+        setUpdatingStore(false);
+        if (error) alert('Error saving store settings');
+        else alert('Store settings updated!');
     };
 
     const loadProducts = async () => {
@@ -208,6 +250,48 @@ const SellerDashboard = () => {
                 >
                     {showForm ? <X size={20} /> : <Plus size={20} />}
                     {showForm ? 'Cancel' : 'Add Product'}
+                </button>
+            </div>
+
+            {/* Store Settings */}
+            <div className="bg-white border p-6 rounded-xl mb-8 shadow-sm">
+                <h2 className="text-lg font-bold mb-4">Store Details</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                        <input
+                            type="text"
+                            value={businessName}
+                            onChange={e => setBusinessName(e.target.value)}
+                            className="w-full border rounded-lg p-3"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+                        <input
+                            type="text"
+                            value={whatsapp}
+                            onChange={e => setWhatsapp(e.target.value)}
+                            className="w-full border rounded-lg p-3"
+                            placeholder="e.g. 23480..."
+                        />
+                        <p className="text-xs text-red-500 mt-1 font-semibold">Start with country code (e.g. 234). No '+' sign. Without this, the 'Buy on WhatsApp' button will fail.</p>
+                    </div>
+                </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Business Description (What do you sell?)</label>
+                    <textarea
+                        value={businessDesc}
+                        onChange={e => setBusinessDesc(e.target.value)}
+                        className="w-full border rounded-lg p-3 min-h-[100px]"
+                    />
+                </div>
+                <button
+                    onClick={handleSaveStoreSettings}
+                    disabled={updatingStore}
+                    className="bg-black text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:bg-gray-800"
+                >
+                    {updatingStore ? 'Saving...' : 'Save Details'}
                 </button>
             </div>
 

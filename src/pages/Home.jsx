@@ -86,7 +86,7 @@ const Home = () => {
                                                         <Link to="/marketplace" className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
                                                             <ShoppingBag size={20} /> Marketplace
                                                         </Link>
-                                                        <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-3 rounded-full font-semibold hover:bg-white/20 transition-all">
+                                                        <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-5 py-2.5 md:px-8 md:py-3 rounded-full font-semibold hover:bg-white/20 transition-all text-sm md:text-base">
                                                             Start Selling
                                                         </Link>
                                                     </>
@@ -162,7 +162,7 @@ const Home = () => {
                                     <Link to="/marketplace" className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-gray-100 transition-all hover:shadow-lg hover:-translate-y-0.5">
                                         Marketplace
                                     </Link>
-                                    <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm border border-white/20 text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-white/10 transition-all hover:-translate-y-0.5">
+                                    <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm border border-white/20 text-white px-5 py-2.5 md:px-8 md:py-3.5 rounded-full text-sm font-medium hover:bg-white/10 transition-all hover:-translate-y-0.5">
                                         Start Selling
                                     </Link>
                                 </div>
