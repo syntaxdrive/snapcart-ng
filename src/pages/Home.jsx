@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, ShoppingBag, Star, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Star, TrendingUp, ChevronLeft, ChevronRight, GraduationCap, X, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import supabase from '../lib/supabase';
 
 const Home = () => {
     const [banners, setBanners] = useState([]);
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [showSafetyToast, setShowSafetyToast] = useState(true);
 
     useEffect(() => {
         const fetchBanners = async () => {
@@ -76,12 +77,20 @@ const Home = () => {
                                                 But if we added one, display it. For now using title as main hook. */}
 
                                             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                                                <Link to="/marketplace" className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
-                                                    <ShoppingBag size={20} /> Start Shopping
-                                                </Link>
-                                                <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-3 rounded-full font-semibold hover:bg-white/20 transition-all">
-                                                    Become a Seller
-                                                </Link>
+                                                {banner.button_text ? (
+                                                    <Link to={banner.button_link || '/marketplace'} className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
+                                                        {banner.button_text} <ArrowRight size={20} />
+                                                    </Link>
+                                                ) : (
+                                                    <>
+                                                        <Link to="/marketplace" className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg">
+                                                            <ShoppingBag size={20} /> Marketplace
+                                                        </Link>
+                                                        <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-3 rounded-full font-semibold hover:bg-white/20 transition-all">
+                                                            Start Selling
+                                                        </Link>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -119,8 +128,8 @@ const Home = () => {
                                             aria-label={`Go to slide ${idx + 1}`}
                                         >
                                             <div className={`h-1 rounded-full transition-all duration-500 ${currentSlide === idx
-                                                    ? 'bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.5)]'
-                                                    : 'bg-white/30 w-4 group-hover:bg-white/50'
+                                                ? 'bg-white w-8 shadow-[0_0_10px_rgba(255,255,255,0.5)]'
+                                                : 'bg-white/30 w-4 group-hover:bg-white/50'
                                                 }`} />
                                         </button>
                                     ))}
@@ -132,29 +141,29 @@ const Home = () => {
                     // Fallback Hero
                     <div className="w-full h-full bg-black relative group overflow-hidden">
                         <img
-                            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-                            alt="Fashion Hero"
+                            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+                            alt="University Campus Life"
                             className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105 group-hover:scale-110 transition-transform duration-[2s]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent" />
 
                         <div className="absolute inset-0 flex items-center justify-center text-center px-4 pt-12">
                             <div className="max-w-4xl animate-fade-in-up">
-                                <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium tracking-wider mb-6 uppercase">
-                                    Premium Marketplace
+                                <span className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium tracking-wider mb-6 uppercase">
+                                    <GraduationCap size={14} /> University Marketplace
                                 </span>
                                 <h1 className="text-5xl md:text-7xl font-display font-medium text-white mb-6 tracking-tight leading-tight">
-                                    Discover <span className="italic font-light">Extraordinary</span>
+                                    Your Campus. <span className="italic font-light">Your Marketplace.</span>
                                 </h1>
                                 <p className="text-lg text-gray-300 mb-10 max-w-xl mx-auto font-light leading-relaxed">
-                                    Curated collections from the city's best independent sellers. Shop unique pieces you won't find anywhere else.
+                                    Buy and sell directly with students on your campus. Connect, trade, and hustle within your university community.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-5 justify-center">
                                     <Link to="/marketplace" className="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-3.5 rounded-full text-sm font-medium hover:bg-gray-100 transition-all hover:shadow-lg hover:-translate-y-0.5">
-                                        Shop Collection
+                                        Marketplace
                                     </Link>
                                     <Link to="/apply-seller" className="inline-flex items-center justify-center gap-2 bg-white/5 backdrop-blur-sm border border-white/20 text-white px-8 py-3.5 rounded-full text-sm font-medium hover:bg-white/10 transition-all hover:-translate-y-0.5">
-                                        Apply as Seller
+                                        Start Selling
                                     </Link>
                                 </div>
                             </div>
@@ -165,27 +174,31 @@ const Home = () => {
 
             {/* Features Section */}
             <div className="container mx-auto px-4 py-20">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold mb-3">Why SnapCart for Students?</h2>
+                    <p className="text-gray-600">The #1 marketplace for Nigerian students</p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-6">
-                            <ShoppingBag className="w-6 h-6" />
+                    <div className="p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-100 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white mb-6 shadow-md">
+                            <GraduationCap className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-bold mb-3">Curated Marketplace</h3>
-                        <p className="text-[var(--color-text-muted)]">Browse thousands of products from vetted local sellers.</p>
+                        <h3 className="text-xl font-bold mb-3">Campus Focused</h3>
+                        <p className="text-gray-600">See products from students in your university first. Easy meetups on campus.</p>
                     </div>
-                    <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 mb-6">
+                    <div className="p-8 rounded-2xl bg-gradient-to-br from-purple-50 to-white border border-purple-100 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white mb-6 shadow-md">
                             <Star className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-bold mb-3">Verified Sellers</h3>
-                        <p className="text-[var(--color-text-muted)]">Shop with confidence knowing all sellers are verified.</p>
+                        <h3 className="text-xl font-bold mb-3">Verified Student Sellers</h3>
+                        <p className="text-gray-600">All sellers are vetted students or businesses. Shop with confidence.</p>
                     </div>
-                    <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center text-pink-600 mb-6">
+                    <div className="p-8 rounded-2xl bg-gradient-to-br from-pink-50 to-white border border-pink-100 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1">
+                        <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center text-white mb-6 shadow-md">
                             <TrendingUp className="w-6 h-6" />
                         </div>
-                        <h3 className="text-xl font-bold mb-3">Start Selling</h3>
-                        <p className="text-[var(--color-text-muted)]">Join SnapCart and reach customers across the country.</p>
+                        <h3 className="text-xl font-bold mb-3">Student Side Hustle</h3>
+                        <p className="text-gray-600">Turn your skills into cash. Sell clothes, gadgets, food, or services to your peers.</p>
                     </div>
                 </div>
             </div>
@@ -193,13 +206,37 @@ const Home = () => {
             {/* CTA Section */}
             <section className="bg-gray-900 text-white py-24">
                 <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-4xl font-display font-bold mb-6">Ready to start selling?</h2>
-                    <p className="text-gray-400 mb-8 max-w-xl mx-auto">Create your store today and join our growing community of successful entrepreneurs.</p>
+                    <h2 className="text-4xl font-display font-bold mb-6">Want to make extra cash?</h2>
+                    <p className="text-gray-400 mb-8 max-w-xl mx-auto">Start your own student business today. Zero fees for students.</p>
                     <Link to="/apply-seller" className="inline-flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors">
-                        Create Seller Account <ArrowRight size={18} />
+                        Create Student Store <ArrowRight size={18} />
                     </Link>
                 </div>
             </section>
+            {/* Safety Toast */}
+            {showSafetyToast && (
+                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-96 bg-white border border-l-4 border-l-orange-500 rounded-lg shadow-2xl p-4 z-50 animate-fade-in-up">
+                    <div className="flex justify-between items-start gap-3">
+                        <div className="flex-shrink-0 bg-orange-100 p-2 rounded-full">
+                            <ShieldAlert className="text-orange-600 w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-gray-900 text-sm mb-1">Stay Safe on SnapCart</h4>
+                            <ul className="text-xs text-gray-600 space-y-1 list-disc pl-4">
+                                <li>Meet in public places (Student Centre, etc).</li>
+                                <li>Inspect items before paying.</li>
+                                <li>Avoid transferring money before meeting.</li>
+                            </ul>
+                        </div>
+                        <button
+                            onClick={() => setShowSafetyToast(false)}
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

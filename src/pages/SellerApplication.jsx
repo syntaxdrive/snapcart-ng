@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../lib/supabase';
-import { Store, Phone, FileText } from 'lucide-react';
+import { Store, Phone, FileText, GraduationCap } from 'lucide-react';
+import nigerianUniversities from '../data/universities';
 
 const SellerApplication = () => {
     const { user, role, loading: authLoading } = useAuth();
@@ -11,9 +12,16 @@ const SellerApplication = () => {
     const [businessName, setBusinessName] = useState('');
     const [description, setDescription] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
+    const [university, setUniversity] = useState('');
+    const [universitySearch, setUniversitySearch] = useState('');
+    const [showUniversityDropdown, setShowUniversityDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [applicationStatus, setApplicationStatus] = useState(null);
+
+    const filteredUniversities = nigerianUniversities.filter(uni =>
+        uni.toLowerCase().includes(universitySearch.toLowerCase())
+    );
 
     useEffect(() => {
         if (!authLoading) {
@@ -75,6 +83,7 @@ const SellerApplication = () => {
                     business_name: businessName,
                     business_description: description,
                     whatsapp_number: whatsapp,
+                    university: university,
                     status: 'pending'
                 }]);
 
@@ -86,6 +95,8 @@ const SellerApplication = () => {
                 setBusinessName('');
                 setDescription('');
                 setWhatsapp('');
+                setUniversity('');
+                setUniversitySearch('');
             }
         } catch (error) {
             alert('Error submitting application. Please try again.');
@@ -162,6 +173,44 @@ const SellerApplication = () => {
                                 />
                             </div>
                             <p className="text-xs text-gray-400 mt-1">Format: 234...</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-1">University</label>
+                            <div className="relative">
+                                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                                <input
+                                    type="text"
+                                    value={universitySearch || university}
+                                    onChange={(e) => {
+                                        setUniversitySearch(e.target.value);
+                                        setShowUniversityDropdown(true);
+                                    }}
+                                    onFocus={() => setShowUniversityDropdown(true)}
+                                    className="w-full border rounded-lg py-3 pl-10 pr-4"
+                                    placeholder="Search for your university..."
+                                    required
+                                />
+                                {showUniversityDropdown && filteredUniversities.length > 0 && (
+                                    <div className="absolute z-20 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredUniversities.map((uni) => (
+                                            <button
+                                                key={uni}
+                                                type="button"
+                                                onClick={() => {
+                                                    setUniversity(uni);
+                                                    setUniversitySearch(uni);
+                                                    setShowUniversityDropdown(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm"
+                                            >
+                                                {uni}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">Start typing to search</p>
                         </div>
 
                         <div>

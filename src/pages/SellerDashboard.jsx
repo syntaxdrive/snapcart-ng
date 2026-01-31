@@ -35,8 +35,49 @@ const SellerDashboard = () => {
         }
     }, [user, role, authLoading]);
 
+    const [bannerFile, setBannerFile] = useState(null);
+    const [currentBanner, setCurrentBanner] = useState(null);
+    const [bannerUploading, setBannerUploading] = useState(false);
+
+    // Qualifications
+    const [qualifications, setQualifications] = useState('');
+    const [updatingQuals, setUpdatingQuals] = useState(false);
+
+    // ... existing useState ...
+
+    const loadStoreInfo = async () => {
+        // Banner
+        const { data: appData } = await supabase
+            .from('seller_applications')
+            .select('banner_url')
+            .eq('user_id', user.id)
+            .single();
+        if (appData) setCurrentBanner(appData.banner_url);
+
+        // Qualifications from Profile
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('qualifications')
+            .eq('id', user.id)
+            .single();
+        if (profileData) setQualifications(profileData.qualifications || '');
+    };
+
+    const handleSaveQualifications = async () => {
+        setUpdatingQuals(true);
+        const { error } = await supabase
+            .from('profiles')
+            .update({ qualifications })
+            .eq('id', user.id);
+
+        setUpdatingQuals(false);
+        if (error) alert('Error saving qualifications');
+        else alert('Qualifications saved!');
+    };
+
     const loadProducts = async () => {
         setLoading(true);
+        loadStoreInfo(); // Fetch banner too
         const { data } = await supabase
             .from('products')
             .select('*')
@@ -44,6 +85,35 @@ const SellerDashboard = () => {
             .order('created_at', { ascending: false });
         setProducts(data || []);
         setLoading(false);
+    };
+
+    const handleBannerUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setBannerUploading(true);
+        const fileName = `banner_${user.id}_${Date.now()}`;
+        const { error: uploadError } = await supabase.storage
+            .from('banners')
+            .upload(fileName, file);
+
+        if (uploadError) {
+            alert('Error uploading banner');
+            setBannerUploading(false);
+            return;
+        }
+
+        const { data: urlData } = supabase.storage.from('banners').getPublicUrl(fileName);
+        const bannerUrl = urlData.publicUrl;
+
+        await supabase
+            .from('seller_applications')
+            .update({ banner_url: bannerUrl })
+            .eq('user_id', user.id);
+
+        setCurrentBanner(bannerUrl);
+        setBannerUploading(false);
+        setBannerFile(null); // Clear input
     };
 
     const handleSubmit = async (e) => {
@@ -141,73 +211,129 @@ const SellerDashboard = () => {
                 </button>
             </div>
 
-            {/* Product Form */}
-            {showForm && (
-                <div className="bg-white border p-6 rounded-xl mb-8">
-                    <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit Product' : 'Add New Product'}</h2>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full border rounded-lg p-3"
-                            placeholder="Product name"
-                            required
-                        />
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="w-full border rounded-lg p-3"
-                            placeholder="Description"
-                            rows="3"
-                            required
-                        />
-                        <div className="grid grid-cols-2 gap-4">
+            {/* Store Banner Settings */}
+            <div className="bg-white border p-6 rounded-xl mb-8 shadow-sm">
+                <h2 className="text-lg font-bold mb-4">Store Appearance</h2>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                    {currentBanner && (
+                        <div className="w-full md:w-48 h-24 rounded-lg overflow-hidden border border-gray-200">
+                            <img src={currentBanner} alt="Current Banner" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+                    <div className="flex-grow">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Upload Store Banner</label>
+                        <div className="flex items-center gap-2">
                             <input
-                                type="number"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                className="border rounded-lg p-3"
-                                placeholder="Price"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleBannerUpload}
+                                disabled={bannerUploading}
+                                className="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100"
+                            />
+                            {bannerUploading && <span className="text-sm text-blue-600">Uploading...</span>}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Recommended size: 1200x400px</p>
+                    </div>
+                </div>
+
+                <hr className="my-6 border-gray-100" />
+
+                {/* Qualifications Section */}
+                <div className="flex flex-col gap-2">
+                    <label className="block text-sm font-medium text-gray-700">Additional info / Qualifications</label>
+                    <div className="flex gap-2">
+                        <textarea
+                            value={qualifications}
+                            onChange={(e) => setQualifications(e.target.value)}
+                            placeholder="e.g. 'Certified Electronics Repairer', 'Using eco-friendly materials', 'Verified source for past questions'"
+                            className="w-full border rounded-lg p-3 text-sm h-24"
+                        />
+                        <button
+                            onClick={handleSaveQualifications}
+                            disabled={updatingQuals}
+                            className="h-10 px-4 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                        >
+                            {updatingQuals ? 'Saving' : 'Save'}
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-500">This will be displayed on your store profile to build trust.</p>
+                </div>
+            </div>
+
+            {/* Product Form */}
+            {
+                showForm && (
+                    <div className="bg-white border p-6 rounded-xl mb-8">
+                        <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit Product' : 'Add New Product'}</h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full border rounded-lg p-3"
+                                placeholder="Product name"
                                 required
                             />
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="border rounded-lg p-3"
-                            >
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setImageFile(e.target.files[0])}
-                            className="w-full"
-                        />
-                        <div className="flex gap-2">
-                            <button
-                                type="submit"
-                                disabled={uploading}
-                                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
-                            >
-                                {uploading ? 'Saving...' : (editingId ? 'Update Product' : 'Add Product')}
-                            </button>
-                            {editingId && (
-                                <button
-                                    type="button"
-                                    onClick={cancelEdit}
-                                    className="px-6 bg-gray-200 text-gray-700 rounded-lg"
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="w-full border rounded-lg p-3"
+                                placeholder="Description"
+                                rows="3"
+                                required
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    className="border rounded-lg p-3"
+                                    placeholder="Price"
+                                    required
+                                />
+                                <select
+                                    value={category}
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="border rounded-lg p-3"
                                 >
-                                    Cancel
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setImageFile(e.target.files[0])}
+                                className="w-full"
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    type="submit"
+                                    disabled={uploading}
+                                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+                                >
+                                    {uploading ? 'Saving...' : (editingId ? 'Update Product' : 'Add Product')}
                                 </button>
-                            )}
-                        </div>
-                    </form>
-                </div>
-            )}
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={cancelEdit}
+                                        className="px-6 bg-gray-200 text-gray-700 rounded-lg"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
+                )
+            }
 
             {/* Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -243,13 +369,15 @@ const SellerDashboard = () => {
                 ))}
             </div>
 
-            {products.length === 0 && (
-                <div className="text-center py-12 text-gray-400">
-                    <Package size={48} className="mx-auto mb-4 opacity-50" />
-                    <p>No products yet. Click "Add Product" to get started!</p>
-                </div>
-            )}
-        </div>
+            {
+                products.length === 0 && (
+                    <div className="text-center py-12 text-gray-400">
+                        <Package size={48} className="mx-auto mb-4 opacity-50" />
+                        <p>No products yet. Click "Add Product" to get started!</p>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
